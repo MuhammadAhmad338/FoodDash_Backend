@@ -97,7 +97,9 @@ const getOrder = asyncHandler(async (req, res) => {
 // @desc  Customer: list own order history
 // @route GET /api/orders/mine
 const listMyOrders = asyncHandler(async (req, res) => {
-  const orders = await Order.find({ customer: req.user._id }).sort({ createdAt: -1 });
+  const orders = await Order.find({ customer: req.user._id })
+    .populate('restaurant', 'name')
+    .sort({ createdAt: -1 });
   res.json(orders);
 });
 

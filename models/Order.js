@@ -39,12 +39,7 @@ const orderSchema = new mongoose.Schema(
 
     items: [orderItemSchema],
 
-    deliveryAddress: {
-      line1: String,
-      city: String,
-      lat: Number,
-      lng: Number,
-    },
+    deliveryAddress: { type: String, required: true },
 
     subtotal: { type: Number, required: true },
     deliveryFee: { type: Number, default: 0 },

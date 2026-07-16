@@ -7,7 +7,7 @@ const Order = require('../models/Order');
 // @route GET /api/admin/stats
 const getStats = asyncHandler(async (req, res) => {
   const [totalRestaurants, pendingRestaurants, totalCustomers, totalOrders, revenueAgg] = await Promise.all([
-    Restaurant.countDocuments({ status: 'approved' }),
+    Restaurant.countDocuments(),
     Restaurant.countDocuments({ status: 'pending' }),
     User.countDocuments({ role: 'customer' }),
     Order.countDocuments(),
