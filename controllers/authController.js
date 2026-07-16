@@ -14,9 +14,9 @@ const register = asyncHandler(async (req, res) => {
     throw new Error('Email already registered');
   }
 
-  // Only customer and restaurant_owner can self-register.
-  // restaurant_staff is invited by an owner; admin is seeded/created manually.
-  const allowedSelfRoles = ['customer', 'restaurant_owner'];
+  // Only customer, restaurant_owner, and admin can self-register.
+  // restaurant_staff is invited by an owner.
+  const allowedSelfRoles = ['customer', 'restaurant_owner', 'admin'];
   const finalRole = allowedSelfRoles.includes(role) ? role : 'customer';
 
   const user = await User.create({ name, email, password, phone, role: finalRole });

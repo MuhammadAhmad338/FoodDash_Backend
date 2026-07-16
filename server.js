@@ -35,7 +35,11 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(helmet());
+// hsts disabled: this is a JSON API for the mobile app, not a browser-facing
+// site, and the header was getting cached by iOS as an HSTS policy for
+// "localhost" - forcing ALL later requests (any port) into TLS and breaking
+// plain-HTTP local dev with a "tlsv1 alert internal error".
+app.use(helmet({ hsts: false }));
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
