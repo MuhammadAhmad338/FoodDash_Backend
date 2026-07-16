@@ -1,9 +1,9 @@
 require('dotenv').config();
-const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const express = require('express');
 const { Server } = require('socket.io');
 
 const connectDB = require('./config/db');
@@ -22,10 +22,8 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = (process.env.CLIENT_ORIGINS || '').split(',').map((o) => o.trim());
-
 const io = new Server(server, {
-  cors: { origin: allowedOrigins, credentials: true },
+  cors: { origin: true, credentials: true },
 });
 initSocket(io);
 
@@ -40,7 +38,7 @@ app.use((req, res, next) => {
 // "localhost" - forcing ALL later requests (any port) into TLS and breaking
 // plain-HTTP local dev with a "tlsv1 alert internal error".
 app.use(helmet({ hsts: false }));
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 // Stripe webhook needs the RAW body for signature verification, so it must be

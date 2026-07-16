@@ -1,6 +1,6 @@
-const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const Restaurant = require('../models/Restaurant');
+const asyncHandler = require('express-async-handler');
 const generateToken = require('../utils/generateToken');
 
 // @desc  Register a new customer (default) or restaurant_owner
