@@ -9,6 +9,16 @@ const restaurantSchema = new mongoose.Schema(
     cuisine: [{ type: String }],
     logoUrl: String,
     coverUrl: String,
+    // Image bytes stored directly in MongoDB (no S3) — served back via
+    // GET /:id/logo and GET /:id/cover
+    logo: {
+      data: Buffer,
+      contentType: String,
+    },
+    cover: {
+      data: Buffer,
+      contentType: String,
+    },
 
     address: {
       line1: String,

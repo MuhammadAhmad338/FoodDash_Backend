@@ -7,6 +7,12 @@ const menuItemSchema = new mongoose.Schema(
     description: { type: String, trim: true },
     price: { type: Number, required: true, min: 0 },
     imageUrl: String,
+    // Image bytes stored directly in MongoDB (no S3) — served back via
+    // GET /:restaurantId/menu/:itemId/image
+    image: {
+      data: Buffer,
+      contentType: String,
+    },
     category: { type: String, trim: true, default: 'General' },
 
     isAvailable: { type: Boolean, default: true },

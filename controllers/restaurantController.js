@@ -64,4 +64,69 @@ const listAllRestaurantsAdmin = asyncHandler(async (req, res) => {
   res.json(restaurants);
 });
 
-module.exports = { listRestaurants, getRestaurant, updateRestaurant, listAllRestaurantsAdmin };
+// Shared helper for the logo/cover upload + fetch pairs below
+const assertOwnerOrAdmin = (req, res, restaurant) => {
+  if (String(restaurant.owner) !== String(req.user._id) && req.user.role !== 'admin') {
+    res.status(403);
+    throw new Error('Not authorized to edit this restaurant');
+  }
+};
+
+const uploadRestaurantImage = (field) =>
+  asyncHandler(async (req, res) => {
+    if (!req.file) {
+      res.status(400);
+      throw new Error('No image file provided');
+    }
+
+    const restaurant = await Restaurant.findById(req.params.id);
+    if (!restaurant) {
+      res.status(404);
+      throw new Error('Restaurant not found');
+    }
+    assertOwnerOrAdmin(req, res, restaurant);
+
+    restaurant[field] = { data: req.file.buffer, contentType: req.file.mimetype };
+    await restaurant.save();
+
+    res.json({ message: 'Image uploaded', imageUrl: `/api/restaurants/${restaurant._id}/${field}` });
+  });
+
+const getRestaurantImage = (field) =>
+  asyncHandler(async (req, res) => {
+    const restaurant = await Restaurant.findById(req.params.id).select(field);
+    if (!restaurant || !restaurant[field] || !restaurant[field].data) {
+      res.status(404);
+      throw new Error('Image not found');
+    }
+
+    res.set('Content-Type', restaurant[field].contentType);
+    res.send(restaurant[field].data);
+  });
+
+// @desc  Owner/admin: upload/replace restaurant logo (stored directly in MongoDB)
+// @route POST /api/restaurants/:id/logo
+const uploadRestaurantLogo = uploadRestaurantImage('logo');
+
+// @desc  Public: fetch restaurant logo bytes straight out of MongoDB
+// @route GET /api/restaurants/:id/logo
+const getRestaurantLogo = getRestaurantImage('logo');
+
+// @desc  Owner/admin: upload/replace restaurant cover image (stored directly in MongoDB)
+// @route POST /api/restaurants/:id/cover
+const uploadRestaurantCover = uploadRestaurantImage('cover');
+
+// @desc  Public: fetch restaurant cover bytes straight out of MongoDB
+// @route GET /api/restaurants/:id/cover
+const getRestaurantCover = getRestaurantImage('cover');
+
+module.exports = {
+  listRestaurants,
+  getRestaurant,
+  updateRestaurant,
+  listAllRestaurantsAdmin,
+  uploadRestaurantLogo,
+  getRestaurantLogo,
+  uploadRestaurantCover,
+  getRestaurantCover,
+};

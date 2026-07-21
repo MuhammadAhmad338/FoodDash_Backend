@@ -67,4 +67,46 @@ const deleteMenuItem = asyncHandler(async (req, res) => {
   res.json({ message: 'Menu item deleted' });
 });
 
-module.exports = { getMenu, createMenuItem, updateMenuItem, deleteMenuItem };
+// @desc  Restaurant staff/owner: upload/replace a menu item's image (stored directly in MongoDB)
+// @route POST /api/restaurants/:restaurantId/menu/:itemId/image
+const uploadMenuItemImage = asyncHandler(async (req, res) => {
+  assertRestaurantAccess(req, res, req.params.restaurantId);
+
+  if (!req.file) {
+    res.status(400);
+    throw new Error('No image file provided');
+  }
+
+  const item = await MenuItem.findOne({ _id: req.params.itemId, restaurant: req.params.restaurantId });
+  if (!item) {
+    res.status(404);
+    throw new Error('Menu item not found');
+  }
+
+  item.image = { data: req.file.buffer, contentType: req.file.mimetype };
+  await item.save();
+
+  res.json({ message: 'Image uploaded', imageUrl: `/api/restaurants/${item.restaurant}/menu/${item._id}/image` });
+});
+
+// @desc  Public: fetch a menu item's image bytes straight out of MongoDB
+// @route GET /api/restaurants/:restaurantId/menu/:itemId/image
+const getMenuItemImage = asyncHandler(async (req, res) => {
+  const item = await MenuItem.findOne({ _id: req.params.itemId, restaurant: req.params.restaurantId }).select('image');
+  if (!item || !item.image || !item.image.data) {
+    res.status(404);
+    throw new Error('Image not found');
+  }
+
+  res.set('Content-Type', item.image.contentType);
+  res.send(item.image.data);
+});
+
+module.exports = {
+  getMenu,
+  createMenuItem,
+  updateMenuItem,
+  deleteMenuItem,
+  uploadMenuItemImage,
+  getMenuItemImage,
+};
