@@ -50,4 +50,21 @@ const restaurantSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Never ship the raw image bytes in list/detail JSON responses — swap them
+// for a URL the client can hit directly (<img>/Image.network), same as if
+// this were an S3 link.
+restaurantSchema.set('toJSON', {
+  transform: (doc, ret) => {
+    if (ret.logo && ret.logo.data) {
+      ret.logoUrl = `/api/restaurants/${ret._id}/logo`;
+    }
+    if (ret.cover && ret.cover.data) {
+      ret.coverUrl = `/api/restaurants/${ret._id}/cover`;
+    }
+    delete ret.logo;
+    delete ret.cover;
+    return ret;
+  },
+});
+
 module.exports = mongoose.model('Restaurant', restaurantSchema);
