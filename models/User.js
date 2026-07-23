@@ -1,16 +1,14 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const addressSchema = new mongoose.Schema(
-  {
-    label: { type: String, default: 'Home' },
-    line1: String,
-    city: String,
-    lat: Number,
-    lng: Number,
-  },
-  { _id: false }
-);
+const addressSchema = new mongoose.Schema({
+  label: { type: String, default: 'Home' },
+  line1: String,
+  city: String,
+  lat: Number,
+  lng: Number,
+  isDefault: { type: Boolean, default: false },
+});
 
 const userSchema = new mongoose.Schema(
   {

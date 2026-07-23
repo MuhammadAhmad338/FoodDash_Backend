@@ -153,4 +153,92 @@ const getAvatar = asyncHandler(async (req, res) => {
   res.send(user.avatar.data);
 });
 
-module.exports = { register, login, googleAuth, getMe, uploadAvatar, getAvatar };
+// @desc  List the logged-in user's saved addresses
+// @route GET /api/auth/addresses
+const listAddresses = asyncHandler(async (req, res) => {
+  res.json(req.user.addresses);
+});
+
+// @desc  Add a saved delivery address for the logged-in customer
+// @route POST /api/auth/addresses
+const addAddress = asyncHandler(async (req, res) => {
+  const { label, line1, city, lat, lng, isDefault } = req.body;
+
+  if (!line1) {
+    res.status(400);
+    throw new Error('line1 is required');
+  }
+
+  const user = await User.findById(req.user._id);
+  const shouldBeDefault = isDefault || user.addresses.length === 0;
+  if (shouldBeDefault) {
+    user.addresses.forEach((address) => {
+      address.isDefault = false;
+    });
+  }
+
+  user.addresses.push({ label, line1, city, lat, lng, isDefault: shouldBeDefault });
+  await user.save();
+
+  res.status(201).json(user.addresses);
+});
+
+// @desc  Update a saved address
+// @route PUT /api/auth/addresses/:addressId
+const updateAddress = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  const address = user.addresses.id(req.params.addressId);
+  if (!address) {
+    res.status(404);
+    throw new Error('Address not found');
+  }
+
+  const { label, line1, city, lat, lng, isDefault } = req.body;
+  if (label !== undefined) address.label = label;
+  if (line1 !== undefined) address.line1 = line1;
+  if (city !== undefined) address.city = city;
+  if (lat !== undefined) address.lat = lat;
+  if (lng !== undefined) address.lng = lng;
+  if (isDefault) {
+    user.addresses.forEach((entry) => {
+      entry.isDefault = false;
+    });
+    address.isDefault = true;
+  }
+
+  await user.save();
+  res.json(user.addresses);
+});
+
+// @desc  Delete a saved address
+// @route DELETE /api/auth/addresses/:addressId
+const deleteAddress = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+  const address = user.addresses.id(req.params.addressId);
+  if (!address) {
+    res.status(404);
+    throw new Error('Address not found');
+  }
+
+  const wasDefault = address.isDefault;
+  address.deleteOne();
+  if (wasDefault && user.addresses.length > 0) {
+    user.addresses[0].isDefault = true;
+  }
+
+  await user.save();
+  res.json(user.addresses);
+});
+
+module.exports = {
+  register,
+  login,
+  googleAuth,
+  getMe,
+  uploadAvatar,
+  getAvatar,
+  listAddresses,
+  addAddress,
+  updateAddress,
+  deleteAddress,
+};
