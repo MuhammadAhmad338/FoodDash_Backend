@@ -32,7 +32,6 @@ app.use((req, res, next) => {
   req.io = io;
   next();
 });
-
 // hsts disabled: this is a JSON API for the mobile app, not a browser-facing
 // site, and the header was getting cached by iOS as an HSTS policy for
 // "localhost" - forcing ALL later requests (any port) into TLS and breaking
